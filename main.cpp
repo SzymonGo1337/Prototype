@@ -6,8 +6,8 @@ void framebufferCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-float y = 200.0f;
-float x = 200.0f;
+float x = 1280.0f / 2;
+float y = 720.0f / 2;
 void keyCallback(GLFWwindow* window) {
 	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
@@ -29,14 +29,23 @@ void keyCallback(GLFWwindow* window) {
 class Rect {
 private:
 	float vertices[24];
+	float colors[24];
 	float posX, posY;
 	float rectSizeX, rectSizeY;
 	
 public:
 	Rect(float sizeX, float sizeY) {
-		posX = 200.0f;
-		posY = 200.0f;
+		posX = 1280.0f / 2;
+		posY = 720.0f / 2;
 		
+		rectSizeX = sizeX;
+		rectSizeY = sizeY;
+	}
+
+	Rect(float sizeX, float sizeY, float x, float y) {
+		posX = x;
+		posY = y;
+
 		rectSizeX = sizeX;
 		rectSizeY = sizeY;
 	}
@@ -45,22 +54,33 @@ public:
 		posX = x;
 		posY = y;
 		
-		float test[24] = {
-			posX, rectSizeX + posY, 0.0f,
-			rectSizeX + posX, rectSizeY + posY, 0.0f,
-			rectSizeX + posX, posY, 0.0f,
-			posX, posY, 0.0f,
+		float testVertices[24] = {
+			posX - rectSizeX / 2, rectSizeX + posY - rectSizeY / 2, 0.0f,
+			rectSizeX + posX - rectSizeX / 2, rectSizeY + posY - rectSizeY / 2, 0.0f,
+			rectSizeX + posX - rectSizeX / 2, posY - rectSizeY / 2, 0.0f,
+			posX - rectSizeX / 2, posY - rectSizeY / 2, 0.0f,
+		};
+
+		float testColors[24] = {
+			255.0f, 0.0f, 0.0f,
+			255.0f, 255.0f, 0.0f,
+			0.0f, 255.0f, 0.0f,
+			0.0f, 0.0f, 0.0f,
 		};
 		
 		for(int i = 0; i < 23; ++i) {
-			vertices[i] = test[i];
+			vertices[i] = testVertices[i];
+			colors[i] = testColors[i];
 		}
 	}
 	
 	void render() {
 		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		glColorPointer(3, GL_FLOAT, 0, colors);
 		glDrawArrays(GL_QUADS, 0, 4);
+		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 	
