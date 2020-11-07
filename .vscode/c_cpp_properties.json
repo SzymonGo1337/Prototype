@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/include"
+                "C:/MinGW/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -12,8 +12,8 @@
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.18362.0",
-            "compilerPath": "/usr/bin/g++",
-            "cStandard": "c18",
+            "compilerPath": "C:/MinGW/bin/g++.exe",
+            "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x86"
         }
