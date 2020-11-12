@@ -9,14 +9,20 @@
 #include "shader.hpp"
 
 void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+    if(glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
         glfwHideWindow(window);
         Sleep(2000);
         glfwShowWindow(window);
+    }
+
+    if(glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
+        glfwSetWindowOpacity(window, 0.0f);
+        Sleep(2000);
+        glfwSetWindowOpacity(window, 1.0f);
     }
 }
 
@@ -33,6 +39,8 @@ void glfwSetup() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    //glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
 	#ifdef __APPLE__
     	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
