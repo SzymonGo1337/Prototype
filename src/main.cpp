@@ -3,13 +3,21 @@
 
 #include <iostream>
 #include <cmath>
+#include <Windows.h>
 #include "stb_image.h"
 
 #include "shader.hpp"
 
 void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+        glfwHideWindow(window);
+        Sleep(2000);
+        glfwShowWindow(window);
+    }
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
