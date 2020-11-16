@@ -3,27 +3,28 @@
 
 #include <iostream>
 #include <cmath>
-#include <Windows.h>
 
 #include "shader.hpp"
 #include "texture.hpp"
 #include "rect.hpp"
+
+float x, y;
 
 void processInput(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 
-    if(glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-        glfwHideWindow(window);
-        Sleep(2000);
-        glfwShowWindow(window);
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        y = y + 0.05f;
+    } else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        y = y - 0.05f;
     }
 
-    if(glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
-        glfwSetWindowOpacity(window, 0.0f);
-        Sleep(2000);
-        glfwSetWindowOpacity(window, 1.0f);
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        x = x - 0.05f;
+    } else if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        x = x + 0.05f;
     }
 }
 
@@ -46,7 +47,7 @@ void glfwSetup() {
 	#endif
 }
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH = 600;
 const unsigned int SCR_HEIGHT = 600;
 
 const char *vertexShaderSource = "#version 330\n"
@@ -89,7 +90,7 @@ int main(int argv, char** argc) {
 
 	Shader shader(vertexShaderSource, fragmentShaderSource);
 
-    Rect rect(0.5f, 0.5f, 0.25f, 0.25f);
+    Rect rect(0.0f, 0.0f, 0.25f, 0.25f);
 
     unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -123,6 +124,13 @@ int main(int argv, char** argc) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render
+        rect.transform(x, y, 0.25f, 0.25f);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(rect.vertices), rect.vertices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(rect.indices), rect.indices, GL_STATIC_DRAW);
+
 		texture.Bind();
 
         shader.Bind();

@@ -9,4 +9,5 @@ public:
     unsigned int indices[6];
 
     Rect(float x, float y, float width, float height);
+    void transform(float x, float y, float width, float height);
 };
