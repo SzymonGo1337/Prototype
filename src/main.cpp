@@ -4,9 +4,10 @@
 #include <iostream>
 #include <cmath>
 #include <Windows.h>
-#include "stb_image.h"
 
 #include "shader.hpp"
+#include "texture.hpp"
+#include "rect.hpp"
 
 void processInput(GLFWwindow *window) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -36,11 +37,9 @@ void glfwSetup() {
 		exit(EXIT_FAILURE);
 	}
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    
-    //glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
 	#ifdef __APPLE__
     	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -51,24 +50,25 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char *vertexShaderSource = "#version 330\n"
-					"layout(location = 0) in vec3 a_Pos;\n"
-					"layout(location = 1) in vec2 a_TexCoord;\n"
-					"out vec2 v_TexCoord;\n"
-					"uniform mat4 u_ViewProjection = mat4(1.0);\n"
-					"uniform mat4 u_Transform = mat4(1.0);\n"
-					"void main() {\n"
-						"v_TexCoord = a_Pos.xy;\n"
-						"gl_Position = u_ViewProjection * u_Transform * vec4(a_Pos, 1.0);\n"
-					"}";
+					             "layout(location = 0) in vec3 aPos;\n"
+					             "layout(location = 1) in vec3 aColor;\n"
+                                 "layout(location = 2) in vec2 aTexCoord;\n"
+					             "out vec3 ourColor;\n"
+                                 "out vec2 TexCoord;\n"
+					             "void main() {\n"
+					             	 "gl_Position = vec4(aPos, 1.0);\n"
+                                     "ourColor = aColor;\n"
+                                     "TexCoord = aTexCoord;\n"
+					             "}";
 
 const char *fragmentShaderSource =	"#version 330\n"
-					"uniform vec4 u_Color = vec4(1.0, 1.0, 1.0, 1.0);\n"
-					"uniform sampler2D u_Texture;\n"
-					"out vec4 Color;\n"
-					"in vec2 v_TexCoord;\n"
-					"void main() {\n"
-						"Color = vec4(v_TexCoord, 0, 1); //u_Color; //* texture(u_Texture, v_TexCoord);\n"
-					"}";
+	                                "out vec4 FragColor;\n"
+                                    "in vec3 ourColor;\n"
+	                                "in vec2 TexCoord;\n"
+                                    "uniform sampler2D ourTexture;\n"
+	                                "void main() {\n"
+	                                	"FragColor = texture(ourTexture, TexCoord);\n"
+	                                "}";
 
 int main(int argv, char** argc) {
     glfwSetup();
@@ -89,69 +89,45 @@ int main(int argv, char** argc) {
 
 	Shader shader(vertexShaderSource, fragmentShaderSource);
 
-    /* float vertices[] = {
-    	// positions          // colors           // texture coords
-    	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   -1.0f, 1.0f,   // top right
-    	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   -1.0f, 0.0f,   // bottom right
-    	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-    	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-	}; */
+    Rect rect(0.5f, 0.5f, 0.25f, 0.25f);
 
-    float verts[] = {
-		0.0f, 0.5f, 0.0f, 0.0f, 0.5f,
-		0.5f, 0.0f, 0.0f, 0.5f, 0.0f,
-		-0.5f, 0.0f, 0.0f, -0.5f, 0.0f
-	};
-
-    unsigned int VAO, VBO;
+    unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rect.vertices), rect.vertices, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(rect.indices), rect.indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(float) * 5, 0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(float) * 5, (void*)(sizeof(float) * 3));
-
-
-
-    /* unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    int width, height, nrChannels;
-
-    unsigned char *data = stbi_load("test.jpg", &width, &height, &nrChannels, 0);
-    if(data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    } else {
-        std::cerr << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data); */
+    Texture texture("test.jpg");
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // render
-		//glBindTexture(GL_TEXTURE_2D, texture);
+		texture.Bind();
 
         shader.Bind();
 		glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -160,6 +136,7 @@ int main(int argv, char** argc) {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     shader.Unbind();
+    texture.Unbind();
 
     glfwTerminate();
     return 0;
